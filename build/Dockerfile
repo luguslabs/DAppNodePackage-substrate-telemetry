@@ -1,11 +1,22 @@
-FROM node:10-alpine
-
-WORKDIR /app
-RUN apk add --no-cache python make g++ git
-
+#Build BACK-END
+FROM rust:buster as builder
+WORKDIR /root/
 RUN git clone https://github.com/paritytech/substrate-telemetry.git
 RUN cd substrate-telemetry && git checkout b665555de6cdfd5a1908ded62ef0b3fca7ab1430
+RUN cp -rf substrate-telemetry/backend/* .
+RUN cargo build --release
 
+
+FROM node:10-buster-slim
+
+#BUILD FRONT-END
+WORKDIR /usr/src/app  
+
+RUN	apt-get -y update; \
+	apt-get install -y --no-install-recommends \
+    ca-certificates python make g++ git supervisor
+RUN git clone https://github.com/paritytech/substrate-telemetry.git
+RUN cd substrate-telemetry && git checkout b665555de6cdfd5a1908ded62ef0b3fca7ab1430
 RUN mkdir scripts
 RUN cp -rf substrate-telemetry/scripts/* ./scripts
 RUN mkdir packages
@@ -14,8 +25,15 @@ RUN cp -f substrate-telemetry/package.json ./
 RUN cp -f substrate-telemetry/yarn.lock ./
 RUN cp -f substrate-telemetry/tsconfig.json ./
 RUN rm -rf substrate-telemetry
-
 RUN yarn 
 
-ENTRYPOINT [ "yarn" ,"start:frontend"]
+#COPY BACK-END bin
+WORKDIR /root/
+COPY --from=builder /root/target/release/telemetry /usr/local/bin/
 
+COPY ./supervisord.conf /etc/supervisord/
+COPY ./start-frontend.sh /usr/local/bin/
+
+EXPOSE 3000
+
+ENTRYPOINT ["supervisord","-c","/etc/supervisord/supervisord.conf"]
