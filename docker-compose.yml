@@ -5,4 +5,7 @@ services:
     image: 'substrate-telemetry-archipel.public.dappnode.eth:0.0.2'
     ports:
       - '3000:3000'
+      - '8000:8000'
+    environment:
+      - REMOTE_PUBLIC_IP_TELEMETRY_BACKEND=
     restart: always

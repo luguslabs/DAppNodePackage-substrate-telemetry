@@ -15,11 +15,5 @@
     "homepage": "https://github.com/luguslabs/DAppNodePackage-substrate-telemetry.git"
   },
   "license": "GLP-3.0",
-  "runOrder": [
-    "substrate-telemetry-backend-archipel.public.dappnode.eth",
-    "substrate-telemetry-archipel.public.dappnode.eth"
-  ],
-  "dependencies": {
-    "substrate-telemetry-backend-archipel.public.dappnode.eth": "latest"
-  }
+  "dependencies": {}
 }
