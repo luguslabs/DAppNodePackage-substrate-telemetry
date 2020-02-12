@@ -20,7 +20,7 @@ It is an AragonApp whose repo is deployed at this address: [0x9f85ae5aefe4a3eff3
 
 | Variable | Description | Values |
 |----------|-------------|--------|
-| `REMOTE_PUBLIC_IP_TELEMETRY_BACKEND` | If not set(Default), backend is start localy and targeted. If IP is set the frontend target this IP backend and the local telemetry backend is not started.| IP |
+| `REMOTE_PUBLIC_IP_TELEMETRY_BACKEND` | If not set (default mode), backend is start locally and automatically targeted. If IP is set the frontend target this IP backend and the local telemetry backend is not started.| IP |
 
 ## Getting Started
 
