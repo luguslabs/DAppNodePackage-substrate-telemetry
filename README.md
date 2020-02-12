@@ -15,6 +15,13 @@ If you want to run only Telemetry backend install this [DAppNode Package Substra
 
 It is an AragonApp whose repo is deployed at this address: [0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a ](https://etherscan.io/address/0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a) and whose ENS address is: [substrate-telemetry-archipel.public.dappnode.eth](https://etherscan.io/enslookup?q=substrate-telemetry-archipel.public.dappnode.eth])
 
+
+## Configuration env parameters needed
+
+| Variable | Description | Values |
+|----------|-------------|--------|
+| `REMOTE_PUBLIC_IP_TELEMETRY_BACKEND` | If not set(Default), backend is start localy and targeted. If IP is set the frontend target this IP backend and the local telemetry backend is not started.| IP |
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
