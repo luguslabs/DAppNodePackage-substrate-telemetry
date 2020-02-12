@@ -1,0 +1,11 @@
+{
+    "description": "Optional configuration",
+    "type": "object",
+    "properties": {
+        "remote_public_ip_telemetry_backend": {
+            "type": "string",
+            "title": "Optional Public IP Telemetry Backend Endpoint.",
+            "description": "If not set (default mode), backend is started locally and automatically targeted. If the IP is set, the frontend target this IP backend and local telemetry backend service is not started."
+        }
+    }
+}

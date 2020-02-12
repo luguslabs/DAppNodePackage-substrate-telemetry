@@ -1,0 +1,6 @@
+{
+    "remote_public_ip_telemetry_backend": {
+        "type": "environment",
+        "name": "REMOTE_PUBLIC_IP_TELEMETRY_BACKEND"
+    }
+}
