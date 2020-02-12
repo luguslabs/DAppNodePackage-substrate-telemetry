@@ -13,13 +13,13 @@ If you want to run only Telemetry backend install this [DAppNode Package Substra
 
 - [Install latest release here](https://github.com/luguslabs/DAppNodePackage-substrate-telemetry/releases) of this DAppNode Package. 
 
-It is an AragonApp whose repo is deployed at this address: [0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a ](https://etherscan.io/address/0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a) and whose ENS address is: [substrate-telemetry-archipel.public.dappnode.eth](https://etherscan.io/enslookup?q=substrate-telemetry-archipel.public.dappnode.eth)
-
-
 - Polkadot Node can then target Substrate Telemetry by adding option : 
 ```
 --telemetry-url ws://BACKEND_PUBLIC_IP:8000/submit
 ```
+
+It is an AragonApp whose repo is deployed at this address: [0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a ](https://etherscan.io/address/0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a) and whose ENS address is: [substrate-telemetry-archipel.public.dappnode.eth](https://etherscan.io/enslookup?q=substrate-telemetry-archipel.public.dappnode.eth)
+
 
 ## Configuration env parameters
 
