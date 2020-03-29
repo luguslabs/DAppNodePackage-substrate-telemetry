@@ -2,7 +2,7 @@
 FROM rust:buster as builder
 WORKDIR /root/
 RUN git clone https://github.com/paritytech/substrate-telemetry.git
-RUN cd substrate-telemetry && git checkout b665555de6cdfd5a1908ded62ef0b3fca7ab1430
+RUN cd substrate-telemetry && git checkout 85b78095333cc9b767e4618e4f3457abe46e4a5e
 RUN cp -rf substrate-telemetry/backend/* .
 RUN cargo build --release
 
@@ -16,7 +16,7 @@ RUN	apt-get -y update; \
     ca-certificates python make g++ git supervisor dnsutils
 RUN npm install -g serve
 RUN git clone https://github.com/paritytech/substrate-telemetry.git
-RUN cd substrate-telemetry && git checkout b665555de6cdfd5a1908ded62ef0b3fca7ab1430
+RUN cd substrate-telemetry && git checkout 85b78095333cc9b767e4618e4f3457abe46e4a5e
 RUN mkdir scripts
 RUN cp -rf substrate-telemetry/scripts/* ./scripts
 RUN mkdir packages

@@ -14,5 +14,13 @@
       "dappnode": "Wed, 12 Feb 2020 15:36:57 GMT"
     },
     "link": "http://my.dappnode/#/sdk/publish/r=substrate-telemetry-archipel.public.dappnode.eth&v=0.1.0&h=%2Fipfs%2FQmdRt8pmKxfPMrCRgAVB9v3QMtN98nwQzSVNrktnescSUQ"
+  },
+  "1.0.0": {
+    "hash": "/ipfs/QmeayGM9ZiT6eikhETdQh6AicJcm4EEjrsPwtuCP5hjqoG",
+    "type": "directory",
+    "uploadedTo": {
+      "dappnode": "Sun, 29 Mar 2020 16:42:00 GMT"
+    },
+    "link": "http://my.dappnode/#/sdk/publish/r=substrate-telemetry-archipel.public.dappnode.eth&v=1.0.0&h=%2Fipfs%2FQmeayGM9ZiT6eikhETdQh6AicJcm4EEjrsPwtuCP5hjqoG"
   }
 }
