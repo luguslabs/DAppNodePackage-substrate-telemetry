@@ -353,21 +353,6 @@ const evaluateTelemetryBestBlock = async ({ page, data: url }) => {
 };
 
 /**
- * evaluateTelemetryFinalizedBlock
- */
-
-const evaluateTelemetryFinalizedBlock = async ({ page, data: url }) => {
-  await loadPage(page, url);
-  const evaluateFinalizedBlockValue = await evaluateValue(
-    page,
-    "div.Chain-header > div",
-    "FINALIZED BLOCK",
-    /\d+/g
-  );
-  return evaluateFinalizedBlockValue;
-};
-
-/**
  * main
  */
 
@@ -449,47 +434,12 @@ async function main() {
         console.eror(err);
       }
 
-      /**
-       * evaluateTelemetryFinalizedBlock
-       */
-      console.log("evaluateTelemetryFinalizedBlock");
-      try {
-        const evaluatePrivateTelemetryFinalizedBlock = await cluster.execute(
-          TELEMETRY_URL,
-          evaluateTelemetryFinalizedBlock
-        );
-        const evaluatePublicTelemetryFinalizedBlock = await cluster.execute(
-          REF_TELEMETRY_URL,
-          evaluateTelemetryFinalizedBlock
-        );
-        const ALERT_FINALIZED_BLOCK_DIFF =
-          "ALERT_FINALIZED_BLOCK_DIFF [" +
-          FINALIZED_BLOCK_DIFF_LIMIT +
-          "]  REACH. Delta ";
-        if (
-          evaluatePrivateTelemetryFinalizedBlock &&
-          evaluatePublicTelemetryFinalizedBlock
-        ) {
-          const deltaFinalized = Math.abs(
-            evaluatePublicTelemetryFinalizedBlock -
-              evaluatePrivateTelemetryFinalizedBlock
-          );
-          if (deltaFinalized >= FINALIZED_BLOCK_DIFF_LIMIT) {
-            console.error(ALERT_FINALIZED_BLOCK_DIFF + deltaFinalized);
-            await bot.sendMessage(
-              TELEGRAM_CHAT_ID,
-              BOT_PREFIX_MSG + ALERT_FINALIZED_BLOCK_DIFF + deltaFinalized
-            );
-          }
-        }
-      } catch (err) {
-        console.eror("evaluateTelemetryFinalizedBlock crash");
-        console.eror(err);
-      }
-
       // TODO compare last block diff between node 1, 2 and 3 
+      // TODO peers number on sentry nodes low
+      // TODO peers number on validator must be 2.
       // TODO alert ping delay important . sec and not ms.
       // TODO alert version polkadot running vs latest in github releases
+      // TODO add option disable compare both telemetry
 
       await cluster.idle();
       await cluster.close();

@@ -16,7 +16,7 @@ docker build -t luguslabs/archipel-telemetry-bot .
 ## Run
 
 ```bash
-docker run -d \
+docker run --name archipel-telemetry-bot -d \
     -e TELEMETRY_URL=__TELEMETRY_URL__ \
     -e TELEGRAM_CHAT_ID=__TELEGRAM_CHAT_ID__\
     -e TELEGRAM_TOKEN=__TELEGRAM_TOKEN__ \
@@ -64,7 +64,7 @@ sed -i "s/3000:80/4000:80/" launch.sh
 
 ```bash
 export MY_PUBLIC_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
-docker run -d \
+docker run --name archipel-telemetry-bot -d \
     -e TELEMETRY_URL=http://$MY_PUBLIC_IP:3000 \
     -e TELEGRAM_CHAT_ID=__TELEGRAM_CHAT_ID__\
     -e TELEGRAM_TOKEN=__TELEGRAM_TOKEN__ \
