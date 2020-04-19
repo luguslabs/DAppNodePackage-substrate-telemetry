@@ -16,19 +16,18 @@ docker build -t luguslabs/archipel-telemetry-bot .
 ## Run
 
 ```bash
-docker volume create grafana_data
-docker volume create prometheus_data
 docker run -d \
     -e TELEMETRY_URL=__TELEMETRY_URL__ \
     -e TELEGRAM_CHAT_ID=__TELEGRAM_CHAT_ID__\
     -e TELEGRAM_TOKEN=__TELEGRAM_TOKEN__ \
-    luguslabs/supervision
+    luguslabs/archipel-telemetry-bot
 ```
-* `TELEMETRY_URL` - like `http://__IP OR_DNS__:3000/#/Kusama`
-* `TELEGRAM_CHAT_ID` - like `-123456789`
-* `TELEGRAM_TOKEN` - like `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
 
-## WIP WIP ... Testing
+- `TELEMETRY_URL` - like `http://__IP OR_DNS__:3000/#/Kusama`
+- `TELEGRAM_CHAT_ID` - like `-123456789`
+- `TELEGRAM_TOKEN` - like `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
+
+## Testing
 
 ### Launch local telemetry
 
@@ -46,21 +45,28 @@ http://localhost:3000
 ```
 
 ### Launch local archipel
-```bash
 
+It uses public IP, you must open appropriate port to be able to test it.
+
+```bash
+export MY_PUBLIC_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
 git clone https://github.com/luguslabs/archipel.git
 cd archipel/deployer/test/
 cp launch.sh launch.sh.ori
-sed -i "s/^POLKADOT_TELEMETRY_URL=.*/POLKADOT_TELEMETRY_URL='ws:\/\/127.0.0.1:8001\/submit\/ 0'/" launch.sh
+sed -i "s/^POLKADOT_TELEMETRY_URL=.*/POLKADOT_TELEMETRY_URL='ws:\/\/$MY_PUBLIC_IP:8000\/submit\/ 0'/" launch.sh
 sed -i "s/3000:80/4000:80/" launch.sh
 
 ./launch.sh
-
-WIP
 
 ```
 
 ### Test Archipel Telemetry Bot
 
-WIP
-
+```bash
+export MY_PUBLIC_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
+docker run -d \
+    -e TELEMETRY_URL=http://$MY_PUBLIC_IP:3000 \
+    -e TELEGRAM_CHAT_ID=__TELEGRAM_CHAT_ID__\
+    -e TELEGRAM_TOKEN=__TELEGRAM_TOKEN__ \
+    luguslabs/archipel-telemetry-bot
+```
