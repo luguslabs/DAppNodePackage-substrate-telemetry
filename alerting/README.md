@@ -1,11 +1,38 @@
 # Archipel Telemetry Bot
 
-Archipel Telemetry Bot permits supervise a private archipel substrate telemetry content with the 3 Polkadot nodes and send Alerting message in as a Telegram Bot.
+Archipel Telemetry Bot supervise a private archipel substrate telemetry content with the 3 Polkadot nodes and send Alerting message in as a Telegram Bot.
 
 This pogram includes:
 
 - Puppeteer: to scrap substrate telemetry.
 - Node-telegram-bot-api : to publish alert message in a Telegram chat.
+
+## Check And Alerts Bot Rules
+
+| Telemetry Table Nodes Rules    | Alert msg                             |
+| ------------------------------ | ------------------------------------- |
+| checkPageHtmlLoaded            | URL inaccessible !! Telemetry down ?: |
+| checkAtLeastOneValidator       | NO validator !!!                      |
+| checkSeveralValidators         | Several active validators !!!         |
+| checkAtLeastOnePassiveNode     | NO passive Nodes ???                  |
+| checkSuspectPassiveNodesNumber | 3 passive Nodes ???                   |
+| checkSoloPassiveNode           | Only 1 passive Node ???               |
+
+| Telemetry Header Rules      | Alert msg                                                                 |
+| --------------------------- | ------------------------------------------------------------------------- |
+| checkBlockBelowOneMinuteAgo | LAST BLOCK AGO LIMIT [LIMIT ] REACH. Current LAST BLOCK AGO = [AGO VALUE] |
+
+| Compare Private Telemetry vs Public Telemetry | Alert msg                                             |
+| --------------------------------------------- | ----------------------------------------------------- |
+| evaluateTelemetryBestBlock                    | 'ALERT_LAST_BLOCK_DIFF [LIMIT] REACH. Delta : [DELTA] |
+
+- Others rules to add in the future ?
+  - compare last block diff between node 1, 2 and 3
+  - peers number on sentry nodes low
+  - peers number on validator must be 2.
+  - alert ping delay important . sec and not ms.
+  - alert version polkadot running vs latest in github releases
+  - add env options enable/disable rules without recompiling.
 
 ## Build
 
