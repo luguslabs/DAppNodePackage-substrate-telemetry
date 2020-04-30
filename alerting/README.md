@@ -21,6 +21,7 @@ This pogram includes:
 | Telemetry Header Rules      | Alert msg                                                                 |
 | --------------------------- | ------------------------------------------------------------------------- |
 | checkBlockBelowOneMinuteAgo | LAST BLOCK AGO LIMIT [LIMIT ] REACH. Current LAST BLOCK AGO = [AGO VALUE] |
+| checkBestBlockNotNull       | Best Block equal 0 on telemetry. Is it normal ?                           |
 
 | Compare Private Telemetry vs Public Telemetry | Alert msg                                             |
 | --------------------------------------------- | ----------------------------------------------------- |
@@ -33,6 +34,7 @@ This pogram includes:
   - alert ping delay important . sec and not ms.
   - alert version polkadot running vs latest in github releases
   - add env options enable/disable rules without recompiling.
+  - add supervison for Archipel nodes too not only kusama ones.
 
 ## Build
 
