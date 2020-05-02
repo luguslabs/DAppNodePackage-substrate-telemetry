@@ -16,6 +16,9 @@ const THREE_OCCURENCES = 3 * 2;
 
 const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN } = process.env;
 
+const SILENT_START =
+  "SILENT_START" in process.env ? process.env.SILENT_START : "false";
+
 const SCRAP_EVERY =
   "SCRAP_EVERY" in process.env ? parseInt(process.env.SCRAP_EVERY) : 5000;
 const SIGNAL_CONFIRMATIONS =
@@ -394,7 +397,10 @@ const evaluateTelemetryBestBlock = async ({ page, data: url }) => {
 async function main() {
   await checkEnv();
   const bot = new TelegramBot(TELEGRAM_TOKEN);
-  await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + BOT_START_MSG);
+
+  if ( ! SILENT_START === "false" ){
+    await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + BOT_START_MSG);
+  }
 
   // Checking if telemetry page every 5 secs
   setIntervalAsync(async () => {
