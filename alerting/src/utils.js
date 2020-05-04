@@ -1,27 +1,27 @@
 // functions
-async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function sleep (ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function countPatternOccurences(input, pattern) {
-  const reg = new RegExp(pattern, "g");
-  return (input.match(reg) || []).length;
+async function countPatternOccurences (input, pattern) {
+  const reg = new RegExp(pattern, 'g')
+  return (input.match(reg) || []).length
 }
 
-async function loadPage(page, url) {
+async function loadPage (page, url) {
   await page.goto(url, {
-    waitUntil: "networkidle2",
-    timeout: 10000,
-  });
-  await page.waitFor(1000);
+    waitUntil: 'networkidle2',
+    timeout: 10000
+  })
+  await page.waitFor(1000)
 }
 
-async function getPageHtml(page, url) {
-  await loadPage(page, url);
-  return await page.evaluate(() => document.body.innerHTML);
+async function getPageHtml (page, url) {
+  await loadPage(page, url)
+  return await page.evaluate(() => document.body.innerHTML)
 }
 
-async function confirmPatternOccurences(
+async function confirmPatternOccurences (
   page,
   url,
   pattern,
@@ -30,94 +30,97 @@ async function confirmPatternOccurences(
   confirmations,
   retryWait
 ) {
-  const signMsg = sign === "greater" ? " than " : "  to ";
+  const signMsg = sign === 'greater' ? ' than ' : '  to '
   // console.log("Must confirm (x"+confirmations+") pattern ["+pattern+"] occurences is "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-  var i;
-  for (i = 0; i < confirmations; i++) {
+  var i
+  for (i = 0; i < confirmations - 1; i++) {
     if (i > 0) {
       console.log(
-        "Confirmation [" + (i + 1) + "/" + confirmations + "] in progress."
-      );
+        'Confirmation [' + (i + 1) + '/' + confirmations + '] in progress.'
+      )
       console.log(
-        "Wait " + retryWait + " ms before retry scrap for confirmations"
-      );
-      await sleep(retryWait);
+        'Wait ' + retryWait + ' ms before retry scrap for confirmations'
+      )
+      await sleep(retryWait)
     }
-    const bodyHTML = await getPageHtml(page, url);
-    const patternOccurences = await countPatternOccurences(bodyHTML, pattern);
+    const bodyHTML = await getPageHtml(page, url)
+    // console.log(bodyHTML)
+    const patternOccurences = await countPatternOccurences(bodyHTML, pattern)
     switch (sign) {
-      case "equal":
+      case 'equal':
         if (patternOccurences != patternOccurencesToConfirm) {
           // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false;
+          return false
         }
-        break;
-      case "notEqual":
+        break
+      case 'notEqual':
         if (patternOccurences === patternOccurencesToConfirm) {
           // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false;
+          return false
         }
-        break;
-      case "greater":
+        break
+      case 'greater':
         if (patternOccurences <= patternOccurencesToConfirm) {
           // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false;
+          return false
         }
-        break;
-      case "greaterOrEqual":
+        break
+      case 'greaterOrEqual':
         if (patternOccurences < patternOccurencesToConfirm) {
           // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false;
+          return false
         }
-        break;
+        break
       default:
         console.log(
           "sign must be 'equal' 'notEqual' or 'greater' o 'greaterOrEqual"
-        );
-        process.exit(1);
+        )
+        process.exit(1)
     }
   }
-  return true;
+  // console.log('true')
+  return true
 }
 
-async function evaluateValue(page, selector, filter, regexp, joinChar) {
-  let result = [];
-  const selections = await page.$$(selector);
+async function evaluateValue (page, selector, filter, regexp, joinChar) {
+  let result = []
+  const selections = await page.$$(selector)
   for (const selection of selections) {
-    const innerText = await page.evaluate((el) => el.innerText, selection);
+    const innerText = await page.evaluate((el) => el.innerText, selection)
     if (filter) {
-      if (filter === "nofilter") {
-        result.push(innerText);
+      if (filter === 'nofilter') {
+        result.push(innerText)
       } else if (innerText.includes(filter)) {
-        result.push(innerText);
+        result.push(innerText)
       }
     } else {
-      result.push(innerText);
+      result.push(innerText)
     }
   }
   if (regexp) {
     result = result.map((item) => {
-      const regok = item.match(regexp);
-      return joinChar ? regok.join(joinChar) : regok.join("");
-    });
+      const regok = item.match(regexp)
+      return joinChar ? regok.join(joinChar) : regok.join('')
+    })
   }
-  return joinChar ? result.join(joinChar) : result.join("");
+  return joinChar ? result.join(joinChar) : result.join('')
 }
 
-async function checkEnv() {
+async function checkEnv () {
   const mandatoryEnvToCheck = [
-    "TELEMETRY_URL",
-    "TELEGRAM_TOKEN",
-    "TELEGRAM_CHAT_ID",
-  ];
+    'TELEMETRY_URL',
+    'TELEGRAM_TOKEN',
+    'TELEGRAM_CHAT_ID',
+    'STASH_ADDRESS'
+  ]
   mandatoryEnvToCheck.map((env) => {
     if (env in process.env) {
-      console.log(env + " process.env ok.");
+      console.log(env + ' process.env ok.')
     } else {
-      console.log(env + " process.env missing.");
-      process.exit(1);
+      console.log(env + ' process.env missing.')
+      process.exit(1)
     }
-  });
+  })
 }
 
 module.exports = {
@@ -127,5 +130,5 @@ module.exports = {
   getPageHtml,
   confirmPatternOccurences,
   evaluateValue,
-  checkEnv,
-};
+  checkEnv
+}

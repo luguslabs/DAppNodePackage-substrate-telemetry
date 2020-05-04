@@ -14,7 +14,15 @@ const ZERO_OCCURENCE = 0
 const ONE_OCCURENCE = 1 * 2
 const THREE_OCCURENCES = 3 * 2
 
-const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN } = process.env
+let firstInWaitingListTest = true
+let firstOutWaitingListTest = true
+let wasInWaitingList = false
+
+let firstInValidatorListTest = true
+let firstOutValidatorListTest = true
+let wasInValidatorList = false
+
+const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN, STASH_ADDRESS } = process.env
 
 const SILENT_START =
   'SILENT_START' in process.env ? process.env.SILENT_START : 'false'
@@ -41,6 +49,14 @@ const BEST_BLOCK_DIFF_LIMIT =
   'BEST_BLOCK_DIFF_LIMIT' in process.env
     ? parseInt(process.env.BEST_BLOCK_DIFF_LIMIT)
     : 20
+const WAITING_LIST_URL =
+    'WAITING_LIST_URL' in process.env
+      ? process.env.WAITING_LIST_URL
+      : 'https://polkastats.io/intention/?accountId='
+const VALIDATORS_LIST_URL =
+      'VALIDATORS_LIST_URL' in process.env
+        ? process.env.VALIDATORS_LIST_URL
+        : 'https://polkastats.io/validator/?accountId='
 
 const BOT_NAME = 'Archipel Telemetry Bot'
 const BOT_ID =
@@ -392,6 +408,162 @@ const evaluateTelemetryBestBlock = async ({ page, data: url }) => {
 }
 
 /**
+ * checkInWaitingList
+ */
+const ALERT_IN_WAITING_LIST = 'Your Stash account is IN of the validator WAITING list.'
+const checkInWaitingList = async ({ page, data: url }) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  console.log('checkInWaitingList')
+
+  const inWaitingList = await confirmPatternOccurences(
+    page,
+    url + STASH_ADDRESS,
+    'Intention ' + STASH_ADDRESS,
+    1,
+    'equal',
+    1,
+    CONFIRMATION_RETRY_DELAY
+  )
+  if (inWaitingList && (!wasInWaitingList || firstInWaitingListTest)) {
+    const inWaitingListConfirmed = await confirmPatternOccurences(
+      page,
+      url + STASH_ADDRESS,
+      'Intention ' + STASH_ADDRESS,
+      1,
+      'equal',
+      SIGNAL_CONFIRMATIONS,
+      CONFIRMATION_RETRY_DELAY
+    )
+    if (inWaitingListConfirmed) {
+      console.error(ALERT_IN_WAITING_LIST)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_IN_WAITING_LIST
+      )
+      wasInWaitingList = true
+      firstInWaitingListTest = false
+    }
+  }
+}
+
+/**
+ * checkOutWaitingList
+ */
+const ALERT_OUT_WAITING_LIST = 'Your Stash account is OUT of the validator WAITING list.'
+const checkOutWaitingList = async ({ page, data: url }) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  console.log('checkOutWaitingList')
+
+  const outWaitingList = await confirmPatternOccurences(
+    page,
+    url + STASH_ADDRESS,
+    'Intention ' + STASH_ADDRESS,
+    0,
+    'equal',
+    1,
+    CONFIRMATION_RETRY_DELAY
+  )
+  if (outWaitingList && (firstOutWaitingListTest || wasInWaitingList)) {
+    const outWaitingListConfirmed = await confirmPatternOccurences(
+      page,
+      url + STASH_ADDRESS,
+      'Intention ' + STASH_ADDRESS,
+      0,
+      'equal',
+      SIGNAL_CONFIRMATIONS,
+      CONFIRMATION_RETRY_DELAY
+    )
+    if (outWaitingListConfirmed) {
+      console.error(ALERT_OUT_WAITING_LIST)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_OUT_WAITING_LIST
+      )
+      wasInWaitingList = false
+      firstOutWaitingListTest = false
+    }
+  }
+}
+
+/**
+ * checkInValidatorList
+ */
+const ALERT_IN_VALIDATOR_LIST = 'Your Stash account is IN of the VALIDATOR list.'
+const checkInValidatorList = async ({ page, data: url }) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  console.log('checkInValidatorList')
+
+  const inValidatorList = await confirmPatternOccurences(
+    page,
+    url + STASH_ADDRESS,
+    'Validator ' + STASH_ADDRESS,
+    1,
+    'equal',
+    1,
+    CONFIRMATION_RETRY_DELAY
+  )
+  if (inValidatorList && (!wasInValidatorList || firstInValidatorListTest)) {
+    const inValidatorListConfirmed = await confirmPatternOccurences(
+      page,
+      url + STASH_ADDRESS,
+      'Validator ' + STASH_ADDRESS,
+      1,
+      'equal',
+      SIGNAL_CONFIRMATIONS,
+      CONFIRMATION_RETRY_DELAY
+    )
+    if (inValidatorListConfirmed) {
+      console.error(ALERT_IN_VALIDATOR_LIST)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_IN_VALIDATOR_LIST
+      )
+      wasInValidatorList = true
+      firstInValidatorListTest = false
+    }
+  }
+}
+
+/**
+ * checkOutValidatorList
+ */
+const ALERT_OUT_VALIDATOR_LIST = 'Your Stash account is OUT of the VALIDATOR list.'
+const checkOutValidatorList = async ({ page, data: url }) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  console.log('checkOutValidatorList')
+
+  const outValidatorList = await confirmPatternOccurences(
+    page,
+    url + STASH_ADDRESS,
+    'Validator ' + STASH_ADDRESS,
+    0,
+    'equal',
+    1,
+    CONFIRMATION_RETRY_DELAY
+  )
+  if (outValidatorList && (firstOutValidatorListTest || wasInValidatorList)) {
+    const outValidatorListConfirmed = await confirmPatternOccurences(
+      page,
+      url + STASH_ADDRESS,
+      'Validator ' + STASH_ADDRESS,
+      0,
+      'equal',
+      SIGNAL_CONFIRMATIONS,
+      CONFIRMATION_RETRY_DELAY
+    )
+    if (outValidatorListConfirmed) {
+      console.error(ALERT_OUT_VALIDATOR_LIST)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_OUT_VALIDATOR_LIST
+      )
+      wasInValidatorList = false
+      firstOutValidatorListTest = false
+    }
+  }
+}
+
+/**
  * main
  */
 
@@ -478,6 +650,15 @@ async function main () {
         console.eror('evaluateTelemetryBestBlock crash')
         console.eror(err)
       }
+
+      /**
+       * check validator list and waiting list
+       */
+      cluster.queue(WAITING_LIST_URL, checkInWaitingList)
+      cluster.queue(WAITING_LIST_URL, checkOutWaitingList)
+
+      cluster.queue(VALIDATORS_LIST_URL, checkInValidatorList)
+      cluster.queue(VALIDATORS_LIST_URL, checkOutValidatorList)
 
       // TODO compare last block diff between node 1, 2 and 3
       // TODO peers number on sentry nodes low
