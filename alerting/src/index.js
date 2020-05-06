@@ -647,8 +647,8 @@ async function main () {
           }
         }
       } catch (err) {
-        console.eror('evaluateTelemetryBestBlock crash')
-        console.eror(err)
+        console.error('evaluateTelemetryBestBlock crash')
+        console.error(err)
       }
 
       /**
