@@ -22,10 +22,9 @@ let firstInValidatorListTest = true
 let firstOutValidatorListTest = true
 let wasInValidatorList = false
 
-const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN, STASH_ADDRESS } = process.env
+const currentNodesModeList = ['unknown', 'unknown', 'unknown']
 
-const SILENT_START =
-  'SILENT_START' in process.env ? process.env.SILENT_START : 'false'
+const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN, STASH_ADDRESS } = process.env
 
 const SCRAP_EVERY =
   'SCRAP_EVERY' in process.env ? parseInt(process.env.SCRAP_EVERY) : 5000
@@ -563,6 +562,91 @@ const checkOutValidatorList = async ({ page, data: url }) => {
   }
 }
 
+const updateNodeMode = async (line, number) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  if (line.includes(number)) {
+    if (currentNodesModeList[number - 1] === 'unknown') {
+      if (line.includes('active')) {
+        currentNodesModeList[number - 1] = 'active'
+        console.log('Node ' + number + ' is Active')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + number + ' is Active'
+        )
+      }
+      if (line.includes('passive')) {
+        currentNodesModeList[number - 1] = 'passive'
+        console.log('Node ' + number + ' is Passive')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + number + ' is Passive'
+        )
+      }
+    } else {
+      if (line.includes('active') && currentNodesModeList[number - 1] === 'passive') {
+        console.log('Node ' + number + ' switch from Passive to Active')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + number + ' switch from Passive to Active'
+        )
+        currentNodesModeList[number - 1] = 'active'
+      }
+      if (line.includes('passive') && currentNodesModeList[number - 1] === 'active') {
+        console.log('Node ' + number + ' switch from Active to Passive')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + number + ' switch from Active to Passive'
+        )
+        currentNodesModeList[number - 1] = 'passive'
+      }
+    }
+  }
+}
+const updateNodesMode = async (line) => {
+  updateNodeMode(line, 1)
+  updateNodeMode(line, 2)
+  updateNodeMode(line, 3)
+}
+
+const evaluateLine1 = async ({ page, data: url }) => {
+  await loadPage(page, url)
+  const line1 = await evaluateValue(
+    page,
+    '.Row:nth-child(1) > td:nth-child(1) .Row-truncate'
+  )
+  updateNodesMode(line1)
+  return line1
+}
+
+const evaluateLine2 = async ({ page, data: url }) => {
+  await loadPage(page, url)
+  const line2 = await evaluateValue(
+    page,
+    '.Row:nth-child(2) > td:nth-child(1) .Row-truncate'
+  )
+  updateNodesMode(line2)
+  return line2
+}
+
+const evaluateLine3 = async ({ page, data: url }) => {
+  await loadPage(page, url)
+  const line3 = await evaluateValue(
+    page,
+    '.Row:nth-child(3) > td:nth-child(1) .Row-truncate'
+  )
+  updateNodesMode(line3)
+  return line3
+}
+
+const evaluateLine4 = async ({ page, data: url }) => {
+  await loadPage(page, url)
+  const line4 = await evaluateValue(
+    page,
+    '.Row:nth-child(4) > td:nth-child(1) .Row-truncate'
+  )
+  return line4
+}
+
 /**
  * main
  */
@@ -571,9 +655,7 @@ async function main () {
   await checkEnv()
   const bot = new TelegramBot(TELEGRAM_TOKEN)
 
-  if (!SILENT_START === 'false') {
-    await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + BOT_START_MSG)
-  }
+  await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + BOT_START_MSG)
 
   // Checking if telemetry page every 5 secs
   setIntervalAsync(async () => {
@@ -592,9 +674,6 @@ async function main () {
         }
       })
 
-      /**
-       * check Telemetry Nodes Table
-       */
       cluster.queue(TELEMETRY_URL, checkPageHtmlLoaded)
       cluster.queue(TELEMETRY_URL, checkAtLeastOneValidator)
       cluster.queue(TELEMETRY_URL, checkSeveralValidators)
@@ -602,19 +681,9 @@ async function main () {
       cluster.queue(TELEMETRY_URL, checkSuspectPassiveNodesNumber)
       cluster.queue(TELEMETRY_URL, checkSoloPassiveNode)
 
-      /**
-       * check Telemetry Header
-       */
       cluster.queue(TELEMETRY_URL, checkBlockBelowOneMinuteAgo)
       cluster.queue(TELEMETRY_URL, checkBestBlockNotNull)
 
-      //
-      /**
-       * compare Private Telemetry vs Public Telemetry
-       */
-      /**
-       * evaluateTelemetryBestBlock
-       */
       console.log('evaluateTelemetryBestBlock')
       try {
         const evaluatePrivateTelemetryBestBlock = await cluster.execute(
@@ -651,14 +720,41 @@ async function main () {
         console.error(err)
       }
 
-      /**
-       * check validator list and waiting list
-       */
       cluster.queue(WAITING_LIST_URL, checkInWaitingList)
       cluster.queue(WAITING_LIST_URL, checkOutWaitingList)
 
       cluster.queue(VALIDATORS_LIST_URL, checkInValidatorList)
       cluster.queue(VALIDATORS_LIST_URL, checkOutValidatorList)
+
+      cluster.queue(TELEMETRY_URL, evaluateLine1)
+      cluster.queue(TELEMETRY_URL, evaluateLine2)
+      cluster.queue(TELEMETRY_URL, evaluateLine3)
+
+      const fourLinesNotAllowed = await cluster.execute(
+        TELEMETRY_URL,
+        evaluateLine4
+      )
+      if (fourLinesNotAllowed) {
+        console.log('4 line detected ')
+        let confirmations = 0
+        var i
+        for (i = 0; i < SIGNAL_CONFIRMATIONS - 1; i++) {
+          const confirmationLine4 = await cluster.execute(
+            TELEMETRY_URL,
+            evaluateLine4
+          )
+          if (confirmationLine4) {
+            confirmations++
+          } else {
+            break
+          }
+          await sleep(CONFIRMATION_RETRY_DELAY)
+        }
+        if (confirmations === (SIGNAL_CONFIRMATIONS - 1)) {
+          console.log('4 Nodes lines in Telemetry table detected')
+          await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + '4 Nodes lines in Telemetry table detected')
+        }
+      }
 
       // TODO compare last block diff between node 1, 2 and 3
       // TODO peers number on sentry nodes low
