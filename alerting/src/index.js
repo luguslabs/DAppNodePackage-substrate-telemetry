@@ -187,7 +187,7 @@ const checkSeveralValidators = async ({ page, data: url }) => {
       url,
       'active',
       ONE_OCCURENCE,
-      'notEqual',
+      'greater',
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
     )
