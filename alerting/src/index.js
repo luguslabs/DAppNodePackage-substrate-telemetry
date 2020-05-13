@@ -562,80 +562,135 @@ const checkOutValidatorList = async ({ page, data: url }) => {
   }
 }
 
-const updateNodeMode = async (line, number) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  if (line.includes(number)) {
-    if (currentNodesModeList[number - 1] === 'unknown') {
-      if (line.includes('active')) {
-        currentNodesModeList[number - 1] = 'active'
-        console.log('Node ' + number + ' is Active')
-        await bot.sendMessage(
-          TELEGRAM_CHAT_ID,
-          BOT_PREFIX_MSG + 'Node ' + number + ' is Active'
-        )
-      }
-      if (line.includes('passive')) {
-        currentNodesModeList[number - 1] = 'passive'
-        console.log('Node ' + number + ' is Passive')
-        await bot.sendMessage(
-          TELEGRAM_CHAT_ID,
-          BOT_PREFIX_MSG + 'Node ' + number + ' is Passive'
-        )
-      }
-    } else {
-      if (line.includes('active') && currentNodesModeList[number - 1] === 'passive') {
-        console.log('Node ' + number + ' switch from Passive to Active')
-        await bot.sendMessage(
-          TELEGRAM_CHAT_ID,
-          BOT_PREFIX_MSG + 'Node ' + number + ' switch from Passive to Active'
-        )
-        currentNodesModeList[number - 1] = 'active'
-      }
-      if (line.includes('passive') && currentNodesModeList[number - 1] === 'active') {
-        console.log('Node ' + number + ' switch from Active to Passive')
-        await bot.sendMessage(
-          TELEGRAM_CHAT_ID,
-          BOT_PREFIX_MSG + 'Node ' + number + ' switch from Active to Passive'
-        )
-        currentNodesModeList[number - 1] = 'passive'
-      }
-    }
+const findNodeNumberOfLine = async (lineToFind, otherLineA, otherLineB) => {
+  if (lineToFind.includes('1')) {
+    return 1
   }
-}
-const updateNodesMode = async (line) => {
-  updateNodeMode(line, 1)
-  updateNodeMode(line, 2)
-  updateNodeMode(line, 3)
+  if (lineToFind.includes('2')) {
+    return 2
+  }
+  if (lineToFind.includes('3')) {
+    return 3
+  }
+  if ((otherLineA.includes('1') && otherLineB.includes('2')) || (otherLineA.includes('2') && otherLineB.includes('1'))) {
+    return 3
+  }
+  if ((otherLineA.includes('2') && otherLineB.includes('3')) || (otherLineA.includes('3') && otherLineB.includes('2'))) {
+    return 1
+  }
+  if ((otherLineA.includes('1') && otherLineB.includes('3')) || (otherLineA.includes('3') && otherLineB.includes('1'))) {
+    return 2
+  }
+  return 0
 }
 
-const evaluateLine1 = async ({ page, data: url }) => {
+const updateNodesMode = async (line1, line2, line3) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+
+  const line1Number = await findNodeNumberOfLine(line1, line2, line3)
+  const line2Number = await findNodeNumberOfLine(line2, line1, line3)
+  const line3Number = await findNodeNumberOfLine(line3, line1, line2)
+
+  if (line1Number === 0 || line2Number === 0 || line3Number === 0) {
+    return false
+  }
+  const lines = [line1, line2, line3]
+  const linesNumber = [line1Number, line2Number, line3Number]
+  lines.forEach(async (line, index) => {
+    if (line.includes('passive')) {
+      if (currentNodesModeList[linesNumber[index] - 1] === 'unknown') {
+        currentNodesModeList[linesNumber[index] - 1] = 'passive'
+        console.log('Node ' + linesNumber[index] + ' is Passive')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + linesNumber[index] + ' is Passive'
+        )
+      }
+      if (currentNodesModeList[linesNumber[index] - 1] === 'active') {
+        console.log('Node ' + linesNumber[index] + ' switch from Active to Passive')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + linesNumber[index] + ' switch from Active to Passive'
+        )
+        currentNodesModeList[linesNumber[index] - 1] = 'passive'
+      }
+    }
+    if (line.includes('active')) {
+      if (currentNodesModeList[linesNumber[index] - 1] === 'unknown') {
+        currentNodesModeList[linesNumber[index] - 1] = 'active'
+        console.log('Node ' + linesNumber[index] + ' is Active')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + linesNumber[index] + ' is Active'
+        )
+      }
+      if (currentNodesModeList[linesNumber[index] - 1] === 'passive') {
+        console.log('Node ' + linesNumber[index] + ' switch from Passive to Active')
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + 'Node ' + linesNumber[index] + ' switch from Passive to Active'
+        )
+        currentNodesModeList[linesNumber[index] - 1] = 'active'
+      }
+    }
+  })
+  return true
+}
+
+const evaluateTabLines = async ({ page, data: url }) => {
+  console.log('evaluateTabLines')
   await loadPage(page, url)
   const line1 = await evaluateValue(
     page,
     '.Row:nth-child(1) > td:nth-child(1) .Row-truncate'
   )
-  updateNodesMode(line1)
-  return line1
-}
-
-const evaluateLine2 = async ({ page, data: url }) => {
-  await loadPage(page, url)
   const line2 = await evaluateValue(
     page,
     '.Row:nth-child(2) > td:nth-child(1) .Row-truncate'
   )
-  updateNodesMode(line2)
-  return line2
-}
-
-const evaluateLine3 = async ({ page, data: url }) => {
-  await loadPage(page, url)
   const line3 = await evaluateValue(
     page,
     '.Row:nth-child(3) > td:nth-child(1) .Row-truncate'
   )
-  updateNodesMode(line3)
-  return line3
+  console.log('evaluateTabLines line1=' + line1)
+  console.log('evaluateTabLines line2=' + line2)
+  console.log('evaluateTabLines line3=' + line3)
+  const tabOk = await updateNodesMode(line1, line2, line3)
+  if (!tabOk) {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('Do not find 3 correct lines in telemetry Tab. Start confirmation')
+    let confirmations = 0
+    var i
+    for (i = 0; i < SIGNAL_CONFIRMATIONS - 1; i++) {
+      await loadPage(page, url)
+      const line1 = await evaluateValue(
+        page,
+        '.Row:nth-child(1) > td:nth-child(1) .Row-truncate'
+      )
+      const line2 = await evaluateValue(
+        page,
+        '.Row:nth-child(2) > td:nth-child(1) .Row-truncate'
+      )
+      const line3 = await evaluateValue(
+        page,
+        '.Row:nth-child(3) > td:nth-child(1) .Row-truncate'
+      )
+      const tabOkConfrm = await updateNodesMode(line1, line2, line3)
+      if (!tabOkConfrm) {
+        confirmations++
+      } else {
+        break
+      }
+      await sleep(CONFIRMATION_RETRY_DELAY)
+    }
+    if (confirmations === (SIGNAL_CONFIRMATIONS - 1)) {
+      console.log('Do not find 3 correct lines in telemetry Tab')
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + 'Do not find 3 correct lines in telemetry Tab'
+      )
+    }
+  }
 }
 
 const evaluateLine4 = async ({ page, data: url }) => {
@@ -726,9 +781,7 @@ async function main () {
       cluster.queue(VALIDATORS_LIST_URL, checkInValidatorList)
       cluster.queue(VALIDATORS_LIST_URL, checkOutValidatorList)
 
-      cluster.queue(TELEMETRY_URL, evaluateLine1)
-      cluster.queue(TELEMETRY_URL, evaluateLine2)
-      cluster.queue(TELEMETRY_URL, evaluateLine3)
+      cluster.queue(TELEMETRY_URL, evaluateTabLines)
 
       const fourLinesNotAllowed = await cluster.execute(
         TELEMETRY_URL,
