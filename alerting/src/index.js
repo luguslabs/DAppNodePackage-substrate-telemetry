@@ -587,6 +587,9 @@ const findNodeNumberOfLine = async (lineToFind, otherLineA, otherLineB) => {
 const updateNodesMode = async (line1, line2, line3) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
 
+  if (!line1.includes('node') || !line2.includes('node') || !line3.includes('node')) {
+    return false
+  }
   const line1Number = await findNodeNumberOfLine(line1, line2, line3)
   const line2Number = await findNodeNumberOfLine(line2, line1, line3)
   const line3Number = await findNodeNumberOfLine(line3, line1, line2)
