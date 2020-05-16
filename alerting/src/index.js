@@ -172,7 +172,7 @@ const ALERT_SEVERAL_VALIDATORS = 'Several active validators !!!'
 const checkSeveralValidators = async ({ page, data: url }) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkSeveralValidators')
-  const severalValidator = await confirmPatternOccurences(
+  const patternOccurence = await confirmPatternOccurences(
     page,
     url,
     'active',
@@ -181,8 +181,8 @@ const checkSeveralValidators = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (severalValidator) {
-    const validatorNotEqualToOne = await confirmPatternOccurences(
+  if (patternOccurence) {
+    const patternOccurenceConfirmed = await confirmPatternOccurences(
       page,
       url,
       'active',
@@ -191,7 +191,7 @@ const checkSeveralValidators = async ({ page, data: url }) => {
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
     )
-    if (validatorNotEqualToOne) {
+    if (patternOccurenceConfirmed) {
       console.error(ALERT_SEVERAL_VALIDATORS)
       await bot.sendMessage(
         TELEGRAM_CHAT_ID,
@@ -209,7 +209,7 @@ const ALERT_ZERO_PASSIVE = 'NO passive Nodes ???'
 const checkAtLeastOnePassiveNode = async ({ page, data: url }) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkAtLeastOnePassiveNode')
-  const noPassiveNode = await confirmPatternOccurences(
+  const patternOccurence = await confirmPatternOccurences(
     page,
     url,
     'passive',
@@ -218,8 +218,8 @@ const checkAtLeastOnePassiveNode = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (noPassiveNode) {
-    const noPassiveNodeConfirmed = await confirmPatternOccurences(
+  if (patternOccurence) {
+    const patternOccurenceConfirmed = await confirmPatternOccurences(
       page,
       url,
       'passive',
@@ -228,7 +228,7 @@ const checkAtLeastOnePassiveNode = async ({ page, data: url }) => {
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
     )
-    if (noPassiveNodeConfirmed) {
+    if (patternOccurenceConfirmed) {
       console.error(ALERT_ZERO_PASSIVE)
       await bot.sendMessage(
         TELEGRAM_CHAT_ID,
@@ -246,7 +246,7 @@ const ALERT_THREE_PASSIVE = '3 passive Nodes ???'
 const checkSuspectPassiveNodesNumber = async ({ page, data: url }) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkSuspectPassiveNodesNumber')
-  const threePassiveNodeOrMore = await confirmPatternOccurences(
+  const patternOccurence = await confirmPatternOccurences(
     page,
     url,
     'passive',
@@ -255,8 +255,8 @@ const checkSuspectPassiveNodesNumber = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (threePassiveNodeOrMore) {
-    const threePassiveNodeOrMoreConfirmed = await confirmPatternOccurences(
+  if (patternOccurence) {
+    const patternOccurenceConfirmed = await confirmPatternOccurences(
       page,
       url,
       'passive',
@@ -265,7 +265,7 @@ const checkSuspectPassiveNodesNumber = async ({ page, data: url }) => {
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
     )
-    if (threePassiveNodeOrMoreConfirmed) {
+    if (patternOccurenceConfirmed) {
       console.error(ALERT_THREE_PASSIVE)
       await bot.sendMessage(
         TELEGRAM_CHAT_ID,
@@ -283,7 +283,7 @@ const ALERT_ONE_PASSIVE = 'Only 1 passive Node ???'
 const checkSoloPassiveNode = async ({ page, data: url }) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkSoloPassiveNode')
-  const onPassiveNode = await confirmPatternOccurences(
+  const patternOccurence = await confirmPatternOccurences(
     page,
     url,
     'passive',
@@ -292,8 +292,8 @@ const checkSoloPassiveNode = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (onPassiveNode) {
-    const onPassiveNodeConfirmed = await confirmPatternOccurences(
+  if (patternOccurence) {
+    const patternOccurenceConfirmed = await confirmPatternOccurences(
       page,
       url,
       'passive',
@@ -302,7 +302,7 @@ const checkSoloPassiveNode = async ({ page, data: url }) => {
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
     )
-    if (onPassiveNodeConfirmed) {
+    if (patternOccurenceConfirmed) {
       console.error(ALERT_ONE_PASSIVE)
       await bot.sendMessage(
         TELEGRAM_CHAT_ID,
@@ -417,8 +417,8 @@ const checkInWaitingList = async ({ page, data: url }) => {
   const inWaitingList = await confirmPatternOccurences(
     page,
     url + STASH_ADDRESS,
-    'Intention ' + STASH_ADDRESS,
-    1,
+    STASH_ADDRESS,
+    5,
     'equal',
     1,
     CONFIRMATION_RETRY_DELAY
@@ -427,8 +427,8 @@ const checkInWaitingList = async ({ page, data: url }) => {
     const inWaitingListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
-      'Intention ' + STASH_ADDRESS,
-      1,
+      STASH_ADDRESS,
+      5,
       'equal',
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
@@ -456,7 +456,7 @@ const checkOutWaitingList = async ({ page, data: url }) => {
   const outWaitingList = await confirmPatternOccurences(
     page,
     url + STASH_ADDRESS,
-    'Intention ' + STASH_ADDRESS,
+    STASH_ADDRESS,
     0,
     'equal',
     1,
@@ -466,7 +466,7 @@ const checkOutWaitingList = async ({ page, data: url }) => {
     const outWaitingListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
-      'Intention ' + STASH_ADDRESS,
+      STASH_ADDRESS,
       0,
       'equal',
       SIGNAL_CONFIRMATIONS,
@@ -495,8 +495,8 @@ const checkInValidatorList = async ({ page, data: url }) => {
   const inValidatorList = await confirmPatternOccurences(
     page,
     url + STASH_ADDRESS,
-    'Validator ' + STASH_ADDRESS,
-    1,
+    STASH_ADDRESS,
+    5,
     'equal',
     1,
     CONFIRMATION_RETRY_DELAY
@@ -505,8 +505,8 @@ const checkInValidatorList = async ({ page, data: url }) => {
     const inValidatorListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
-      'Validator ' + STASH_ADDRESS,
-      1,
+      STASH_ADDRESS,
+      5,
       'equal',
       SIGNAL_CONFIRMATIONS,
       CONFIRMATION_RETRY_DELAY
@@ -534,7 +534,7 @@ const checkOutValidatorList = async ({ page, data: url }) => {
   const outValidatorList = await confirmPatternOccurences(
     page,
     url + STASH_ADDRESS,
-    'Validator ' + STASH_ADDRESS,
+    STASH_ADDRESS,
     0,
     'equal',
     1,
@@ -544,7 +544,7 @@ const checkOutValidatorList = async ({ page, data: url }) => {
     const outValidatorListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
-      'Validator ' + STASH_ADDRESS,
+      STASH_ADDRESS,
       0,
       'equal',
       SIGNAL_CONFIRMATIONS,
@@ -687,11 +687,7 @@ const evaluateTabLines = async ({ page, data: url }) => {
       await sleep(CONFIRMATION_RETRY_DELAY)
     }
     if (confirmations === (SIGNAL_CONFIRMATIONS - 1)) {
-      console.log('Do not find 3 correct lines in telemetry Tab')
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + 'Do not find 3 correct lines in telemetry Tab'
-      )
+      console.log('Do not find 3 correct lines in telemetry Tab. Confirmed')
     }
   }
 }

@@ -21,6 +21,42 @@ async function getPageHtml (page, url) {
   return await page.evaluate(() => document.body.innerHTML)
 }
 
+async function controlPatternOccurences (sign, pattern, patternOccurences, patternOccurencesToConfirm) {
+  // const signMsg = sign === 'greater' ? ' than ' : '  to '
+  switch (sign) {
+    case 'equal':
+      if (patternOccurences !== patternOccurencesToConfirm) {
+        // console.log('Wrong statment for pattern [' + pattern + ']. Occurences [' + patternOccurences + '] is NOT ' + sign + signMsg + '[' + patternOccurencesToConfirm + ']')
+        return false
+      }
+      break
+    case 'notEqual':
+      if (patternOccurences === patternOccurencesToConfirm) {
+        // console.log('Wrong statment for pattern [' + pattern + ']. Occurences [' + patternOccurences + '] is NOT ' + sign + signMsg + '[' + patternOccurencesToConfirm + ']')
+        return false
+      }
+      break
+    case 'greater':
+      if (patternOccurences <= patternOccurencesToConfirm) {
+        // console.log('Wrong statment for pattern [' + pattern + ']. Occurences [' + patternOccurences + '] is NOT ' + sign + signMsg + '[' + patternOccurencesToConfirm + ']')
+        return false
+      }
+      break
+    case 'greaterOrEqual':
+      if (patternOccurences < patternOccurencesToConfirm) {
+        // console.log('Wrong statment for pattern [' + pattern + ']. Occurences [' + patternOccurences + '] is NOT ' + sign + signMsg + '[' + patternOccurencesToConfirm + ']')
+        return false
+      }
+      break
+    default:
+      console.log(
+        "sign must be 'equal' 'notEqual' or 'greater' o 'greaterOrEqual"
+      )
+      process.exit(1)
+  }
+  return true
+}
+
 async function confirmPatternOccurences (
   page,
   url,
@@ -30,8 +66,17 @@ async function confirmPatternOccurences (
   confirmations,
   retryWait
 ) {
-  const signMsg = sign === 'greater' ? ' than ' : '  to '
   // console.log("Must confirm (x"+confirmations+") pattern ["+pattern+"] occurences is "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
+  if (confirmations === 1) {
+    const bodyHTML = await getPageHtml(page, url)
+    // console.log(bodyHTML)
+    const patternOccurences = await countPatternOccurences(bodyHTML, pattern)
+    const controlOk = await controlPatternOccurences(sign, pattern, patternOccurences, patternOccurencesToConfirm)
+    // console.log('first control Ok' + controlOk)
+    if (!controlOk) {
+      return false
+    }
+  }
   var i
   for (i = 0; i < confirmations - 1; i++) {
     if (i > 0) {
@@ -46,36 +91,10 @@ async function confirmPatternOccurences (
     const bodyHTML = await getPageHtml(page, url)
     // console.log(bodyHTML)
     const patternOccurences = await countPatternOccurences(bodyHTML, pattern)
-    switch (sign) {
-      case 'equal':
-        if (patternOccurences != patternOccurencesToConfirm) {
-          // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false
-        }
-        break
-      case 'notEqual':
-        if (patternOccurences === patternOccurencesToConfirm) {
-          // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false
-        }
-        break
-      case 'greater':
-        if (patternOccurences <= patternOccurencesToConfirm) {
-          // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false
-        }
-        break
-      case 'greaterOrEqual':
-        if (patternOccurences < patternOccurencesToConfirm) {
-          // console.log( "Wrong statment for pattern ["+pattern+"]. Occurences ["+patternOccurences+"] is NOT "+sign+signMsg+"["+patternOccurencesToConfirm+"]")
-          return false
-        }
-        break
-      default:
-        console.log(
-          "sign must be 'equal' 'notEqual' or 'greater' o 'greaterOrEqual"
-        )
-        process.exit(1)
+    const controlOk = await controlPatternOccurences(sign, pattern, patternOccurences, patternOccurencesToConfirm)
+    // console.log('controlOk' + controlOk)
+    if (!controlOk) {
+      return false
     }
   }
   // console.log('true')

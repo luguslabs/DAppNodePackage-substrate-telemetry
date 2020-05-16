@@ -1,6 +1,6 @@
 {
   "name": "archipel-telemetry-bot",
-  "version": "1.5.5",
+  "version": "1.6.5",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
