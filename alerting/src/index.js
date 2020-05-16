@@ -36,10 +36,21 @@ const CONFIRMATION_RETRY_DELAY =
   'CONFIRMATION_RETRY_DELAY' in process.env
     ? parseInt(process.env.CONFIRMATION_RETRY_DELAY)
     : 5000
+
+const NETWORK =
+'NETWORK' in process.env
+  ? process.env.NETWORK
+  : 'Kusama'
+
+const ARCHIPEL_NETWORK =
+'ARCHIPEL_NETWORK' in process.env
+  ? process.env.ARCHIPEL_NETWORK
+  : 'Archipel'
+
 const REF_TELEMETRY_URL =
   'REF_TELEMETRY_URL' in process.env
     ? process.env.REF_TELEMETRY_URL
-    : 'https://telemetry.polkadot.io/#/Kusama'
+    : 'https://telemetry.polkadot.io/#/'
 const LAST_BLOCK_AGO_LIMIT_FOR_ALERT =
   'LAST_BLOCK_AGO_LIMIT_FOR_ALERT' in process.env
     ? parseInt(process.env.LAST_BLOCK_AGO_LIMIT_FOR_ALERT)
@@ -164,6 +175,7 @@ const checkAtLeastOneValidator = async ({ page, data: url }) => {
   }
 }
 
+
 /**
  * checkSeveralValidators
  */
@@ -196,6 +208,43 @@ const checkSeveralValidators = async ({ page, data: url }) => {
       await bot.sendMessage(
         TELEGRAM_CHAT_ID,
         BOT_PREFIX_MSG + ALERT_SEVERAL_VALIDATORS
+      )
+    }
+  }
+}
+
+/**
+ * checkArchipelNetwork
+ */
+
+const ALERT_MISSING_ARCHIPEL_NODES = 'Missing Archipel node ? Not 3 nodes found !'
+const checkArchipelNetwork = async ({ page, data: url }) => {
+  const bot = new TelegramBot(TELEGRAM_TOKEN)
+  console.log('checkArchipelNetwork')
+  const patternOccurence = await confirmPatternOccurences(
+    page,
+    url,
+    'archipel',
+    THREE_OCCURENCES,
+    'notEqual',
+    1,
+    CONFIRMATION_RETRY_DELAY
+  )
+  if (patternOccurence) {
+    const patternOccurenceConfirmed = await confirmPatternOccurences(
+      page,
+      url,
+      'archipel',
+      THREE_OCCURENCES,
+      'notEqual',
+      SIGNAL_CONFIRMATIONS,
+      CONFIRMATION_RETRY_DELAY
+    )
+    if (patternOccurenceConfirmed) {
+      console.error(ALERT_MISSING_ARCHIPEL_NODES)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_MISSING_ARCHIPEL_NODES
       )
     }
   }
@@ -728,24 +777,26 @@ async function main () {
         }
       })
 
-      cluster.queue(TELEMETRY_URL, checkPageHtmlLoaded)
-      cluster.queue(TELEMETRY_URL, checkAtLeastOneValidator)
-      cluster.queue(TELEMETRY_URL, checkSeveralValidators)
-      cluster.queue(TELEMETRY_URL, checkAtLeastOnePassiveNode)
-      cluster.queue(TELEMETRY_URL, checkSuspectPassiveNodesNumber)
-      cluster.queue(TELEMETRY_URL, checkSoloPassiveNode)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkPageHtmlLoaded)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkAtLeastOneValidator)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkSeveralValidators)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkAtLeastOnePassiveNode)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkSuspectPassiveNodesNumber)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkSoloPassiveNode)
 
-      cluster.queue(TELEMETRY_URL, checkBlockBelowOneMinuteAgo)
-      cluster.queue(TELEMETRY_URL, checkBestBlockNotNull)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkBlockBelowOneMinuteAgo)
+      cluster.queue(TELEMETRY_URL+NETWORK, checkBestBlockNotNull)
+
+      cluster.queue(TELEMETRY_URL+ARCHIPEL_NETWORK, checkArchipelNetwork)
 
       console.log('evaluateTelemetryBestBlock')
       try {
         const evaluatePrivateTelemetryBestBlock = await cluster.execute(
-          TELEMETRY_URL,
+          TELEMETRY_URL+NETWORK,
           evaluateTelemetryBestBlock
         )
         const evaluatePublicTelemetryBestBlock = await cluster.execute(
-          REF_TELEMETRY_URL,
+          REF_TELEMETRY_URL+NETWORK,
           evaluateTelemetryBestBlock
         )
         const ALERT_LAST_BLOCK_DIFF =
@@ -780,10 +831,10 @@ async function main () {
       cluster.queue(VALIDATORS_LIST_URL, checkInValidatorList)
       cluster.queue(VALIDATORS_LIST_URL, checkOutValidatorList)
 
-      cluster.queue(TELEMETRY_URL, evaluateTabLines)
+      cluster.queue(TELEMETRY_URL+NETWORK, evaluateTabLines)
 
       const fourLinesNotAllowed = await cluster.execute(
-        TELEMETRY_URL,
+        TELEMETRY_URL+NETWORK,
         evaluateLine4
       )
       if (fourLinesNotAllowed) {
@@ -792,7 +843,7 @@ async function main () {
         var i
         for (i = 0; i < SIGNAL_CONFIRMATIONS - 1; i++) {
           const confirmationLine4 = await cluster.execute(
-            TELEMETRY_URL,
+            TELEMETRY_URL+NETWORK,
             evaluateLine4
           )
           if (confirmationLine4) {
@@ -807,7 +858,6 @@ async function main () {
           await bot.sendMessage(TELEGRAM_CHAT_ID, BOT_PREFIX_MSG + '4 Nodes lines in Telemetry table detected')
         }
       }
-
       // TODO compare last block diff between node 1, 2 and 3
       // TODO peers number on sentry nodes low
       // TODO peers number on validator must be 2.
