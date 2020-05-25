@@ -14,14 +14,6 @@ const ZERO_OCCURENCE = 0
 const ONE_OCCURENCE = 1 * 2
 const THREE_OCCURENCES = 3 * 2
 
-let firstInWaitingListTest = true
-let firstOutWaitingListTest = true
-let wasInWaitingList = false
-
-let firstInValidatorListTest = true
-let firstOutValidatorListTest = true
-let wasInValidatorList = false
-
 const currentNodesModeList = ['unknown', 'unknown', 'unknown']
 
 const { TELEMETRY_URL, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN, STASH_ADDRESS } = process.env
@@ -174,7 +166,6 @@ const checkAtLeastOneValidator = async ({ page, data: url }) => {
     }
   }
 }
-
 
 /**
  * checkSeveralValidators
@@ -456,52 +447,10 @@ const evaluateTelemetryBestBlock = async ({ page, data: url }) => {
 }
 
 /**
- * checkInWaitingList
- */
-const ALERT_IN_WAITING_LIST = 'Your Stash account is IN of the validator WAITING list.'
-const checkInWaitingList = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkInWaitingList')
-
-  const inWaitingList = await confirmPatternOccurences(
-    page,
-    url + STASH_ADDRESS,
-    STASH_ADDRESS,
-    5,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (inWaitingList && (!wasInWaitingList || firstInWaitingListTest)) {
-    const inWaitingListConfirmed = await confirmPatternOccurences(
-      page,
-      url + STASH_ADDRESS,
-      STASH_ADDRESS,
-      5,
-      'equal',
-      SIGNAL_CONFIRMATIONS,
-      CONFIRMATION_RETRY_DELAY
-    )
-    if (inWaitingListConfirmed) {
-      console.error(ALERT_IN_WAITING_LIST)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_IN_WAITING_LIST
-      )
-      wasInWaitingList = true
-      firstInWaitingListTest = false
-    }
-  }
-}
-
-/**
  * checkOutWaitingList
  */
-const ALERT_OUT_WAITING_LIST = 'Your Stash account is OUT of the validator WAITING list.'
 const checkOutWaitingList = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkOutWaitingList')
-
   const outWaitingList = await confirmPatternOccurences(
     page,
     url + STASH_ADDRESS,
@@ -511,7 +460,7 @@ const checkOutWaitingList = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (outWaitingList && (firstOutWaitingListTest || wasInWaitingList)) {
+  if (outWaitingList) {
     const outWaitingListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
@@ -522,62 +471,16 @@ const checkOutWaitingList = async ({ page, data: url }) => {
       CONFIRMATION_RETRY_DELAY
     )
     if (outWaitingListConfirmed) {
-      console.error(ALERT_OUT_WAITING_LIST)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_OUT_WAITING_LIST
-      )
-      wasInWaitingList = false
-      firstOutWaitingListTest = false
+      return true
     }
   }
-}
-
-/**
- * checkInValidatorList
- */
-const ALERT_IN_VALIDATOR_LIST = 'Your Stash account is IN of the VALIDATOR list.'
-const checkInValidatorList = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkInValidatorList')
-
-  const inValidatorList = await confirmPatternOccurences(
-    page,
-    url + STASH_ADDRESS,
-    STASH_ADDRESS,
-    5,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (inValidatorList && (!wasInValidatorList || firstInValidatorListTest)) {
-    const inValidatorListConfirmed = await confirmPatternOccurences(
-      page,
-      url + STASH_ADDRESS,
-      STASH_ADDRESS,
-      5,
-      'equal',
-      SIGNAL_CONFIRMATIONS,
-      CONFIRMATION_RETRY_DELAY
-    )
-    if (inValidatorListConfirmed) {
-      console.error(ALERT_IN_VALIDATOR_LIST)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_IN_VALIDATOR_LIST
-      )
-      wasInValidatorList = true
-      firstInValidatorListTest = false
-    }
-  }
+  return false
 }
 
 /**
  * checkOutValidatorList
  */
-const ALERT_OUT_VALIDATOR_LIST = 'Your Stash account is OUT of the VALIDATOR list.'
 const checkOutValidatorList = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkOutValidatorList')
 
   const outValidatorList = await confirmPatternOccurences(
@@ -589,7 +492,7 @@ const checkOutValidatorList = async ({ page, data: url }) => {
     1,
     CONFIRMATION_RETRY_DELAY
   )
-  if (outValidatorList && (firstOutValidatorListTest || wasInValidatorList)) {
+  if (outValidatorList) {
     const outValidatorListConfirmed = await confirmPatternOccurences(
       page,
       url + STASH_ADDRESS,
@@ -600,15 +503,10 @@ const checkOutValidatorList = async ({ page, data: url }) => {
       CONFIRMATION_RETRY_DELAY
     )
     if (outValidatorListConfirmed) {
-      console.error(ALERT_OUT_VALIDATOR_LIST)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_OUT_VALIDATOR_LIST
-      )
-      wasInValidatorList = false
-      firstOutValidatorListTest = false
+      return true
     }
   }
+  return false
 }
 
 const findNodeNumberOfLine = async (lineToFind, otherLineA, otherLineB) => {
@@ -777,26 +675,26 @@ async function main () {
         }
       })
 
-      cluster.queue(TELEMETRY_URL+NETWORK, checkPageHtmlLoaded)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkAtLeastOneValidator)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkSeveralValidators)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkAtLeastOnePassiveNode)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkSuspectPassiveNodesNumber)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkSoloPassiveNode)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkPageHtmlLoaded)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkAtLeastOneValidator)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkSeveralValidators)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkAtLeastOnePassiveNode)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkSuspectPassiveNodesNumber)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkSoloPassiveNode)
 
-      cluster.queue(TELEMETRY_URL+NETWORK, checkBlockBelowOneMinuteAgo)
-      cluster.queue(TELEMETRY_URL+NETWORK, checkBestBlockNotNull)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkBlockBelowOneMinuteAgo)
+      cluster.queue(TELEMETRY_URL + NETWORK, checkBestBlockNotNull)
 
-      cluster.queue(TELEMETRY_URL+ARCHIPEL_NETWORK, checkArchipelNetwork)
+      cluster.queue(TELEMETRY_URL + ARCHIPEL_NETWORK, checkArchipelNetwork)
 
       console.log('evaluateTelemetryBestBlock')
       try {
         const evaluatePrivateTelemetryBestBlock = await cluster.execute(
-          TELEMETRY_URL+NETWORK,
+          TELEMETRY_URL + NETWORK,
           evaluateTelemetryBestBlock
         )
         const evaluatePublicTelemetryBestBlock = await cluster.execute(
-          REF_TELEMETRY_URL+NETWORK,
+          REF_TELEMETRY_URL + NETWORK,
           evaluateTelemetryBestBlock
         )
         const ALERT_LAST_BLOCK_DIFF =
@@ -824,17 +722,40 @@ async function main () {
         console.error('evaluateTelemetryBestBlock crash')
         console.error(err)
       }
-
-      cluster.queue(WAITING_LIST_URL, checkInWaitingList)
       cluster.queue(WAITING_LIST_URL, checkOutWaitingList)
 
-      cluster.queue(VALIDATORS_LIST_URL, checkInValidatorList)
       cluster.queue(VALIDATORS_LIST_URL, checkOutValidatorList)
 
-      cluster.queue(TELEMETRY_URL+NETWORK, evaluateTabLines)
+      console.log('checkOutList')
+      try {
+        const isOutValidatorList = await cluster.execute(
+          VALIDATORS_LIST_URL,
+          checkOutValidatorList
+        )
+        if (isOutValidatorList) {
+          const isOutWaitingList = await cluster.execute(
+            WAITING_LIST_URL,
+            checkOutWaitingList
+          )
+          if (isOutWaitingList) {
+            const ALERT_OUT_FROM_LIST =
+            'STASH ACCOUNT not in waiting list and not in validator list. Slashed and eject !? '
+            console.error(ALERT_OUT_FROM_LIST)
+            await bot.sendMessage(
+              TELEGRAM_CHAT_ID,
+              BOT_PREFIX_MSG + ALERT_OUT_FROM_LIST
+            )
+          }
+        }
+      } catch (err) {
+        console.error('checkOutList crash')
+        console.error(err)
+      }
+
+      cluster.queue(TELEMETRY_URL + NETWORK, evaluateTabLines)
 
       const fourLinesNotAllowed = await cluster.execute(
-        TELEMETRY_URL+NETWORK,
+        TELEMETRY_URL + NETWORK,
         evaluateLine4
       )
       if (fourLinesNotAllowed) {
@@ -843,7 +764,7 @@ async function main () {
         var i
         for (i = 0; i < SIGNAL_CONFIRMATIONS - 1; i++) {
           const confirmationLine4 = await cluster.execute(
-            TELEMETRY_URL+NETWORK,
+            TELEMETRY_URL + NETWORK,
             evaluateLine4
           )
           if (confirmationLine4) {
