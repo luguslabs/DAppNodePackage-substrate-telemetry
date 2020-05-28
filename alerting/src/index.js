@@ -741,10 +741,10 @@ async function main () {
             const ALERT_OUT_FROM_LIST =
             'STASH ACCOUNT not in waiting list and not in validator list. Slashed and eject !? '
             console.error(ALERT_OUT_FROM_LIST)
-            await bot.sendMessage(
+            /*   await bot.sendMessage(
               TELEGRAM_CHAT_ID,
               BOT_PREFIX_MSG + ALERT_OUT_FROM_LIST
-            )
+            ) */
           }
         }
       } catch (err) {
