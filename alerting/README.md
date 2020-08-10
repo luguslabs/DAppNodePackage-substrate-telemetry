@@ -9,14 +9,13 @@ This pogram includes:
 
 ## Check And Alerts Bot Rules
 
-| Telemetry Table Nodes Rules    | Alert msg                             |
-| ------------------------------ | ------------------------------------- |
-| checkPageHtmlLoaded            | URL inaccessible !! Telemetry down ?: |
-| checkAtLeastOneValidator       | NO validator !!!                      |
-| checkSeveralValidators         | Several active validators !!!         |
-| checkAtLeastOnePassiveNode     | NO passive Nodes ???                  |
-| checkSuspectPassiveNodesNumber | 3 passive Nodes ???                   |
-| checkSoloPassiveNode           | Only 1 passive Node ???               |
+| Telemetry Table Nodes Rules | Alert msg                                               |
+| --------------------------- | ------------------------------------------------------- |
+| checkPageHtmlLoaded         | URL inaccessible !! Telemetry down ?:                   |
+| checkActiveNodesNumber      | Active nodes alert ! Expected + ACTIVE_NODES_NUMBER     |
+| checkPassiveNodesNumber     | Passive nodes alert ! Expected + PASSIVE_NODES_NUMBER   |
+| checkSentryNodesNumber      | Sentry nodes alert ! Expected + SENTRY_NODES_NUMBER     |
+| checkArchipelNodesNumber    | Archipel nodes alert ! Expected + ARCHIPEL_NODES_NUMBER |
 
 | Telemetry Header Rules      | Alert msg                                                                 |
 | --------------------------- | ------------------------------------------------------------------------- |
@@ -34,7 +33,6 @@ This pogram includes:
   - alert ping delay important . sec and not ms.
   - alert version polkadot running vs latest in github releases
   - add env options enable/disable rules without recompiling.
-  - add supervison for Archipel nodes too not only kusama ones.
 
 ## Build
 
@@ -52,7 +50,7 @@ docker run --name archipel-telemetry-bot -d \
     luguslabs/archipel-telemetry-bot
 ```
 
-- `TELEMETRY_URL` - like `http://__IP OR_DNS__:3000/#/Kusama`
+- `TELEMETRY_URL` - like `http://__IP OR_DNS__:3000/#/`
 - `TELEGRAM_CHAT_ID` - like `-123456789`
 - `TELEGRAM_TOKEN` - like `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
 
