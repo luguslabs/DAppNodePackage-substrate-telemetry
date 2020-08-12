@@ -230,7 +230,7 @@ const checkSentryNodesNumber = async ({ page, data: url }) => {
   const checkSentryNodesNumber = await confirmPatternOccurences(
     page,
     url,
-    'sentry',
+    'public',
     SENTRY_NODES_NUMBER * 2,
     'equal',
     1,
@@ -240,7 +240,7 @@ const checkSentryNodesNumber = async ({ page, data: url }) => {
     const checkSentryNodesNumberConfirm= await confirmPatternOccurences(
       page,
       url,
-      'sentry',
+      'public',
       SENTRY_NODES_NUMBER * 2,
       'notEqual',
       SIGNAL_CONFIRMATIONS,
