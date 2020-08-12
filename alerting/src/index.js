@@ -415,7 +415,7 @@ async function main () {
         }
       })
 
-      cluster.queue(TELEMETRY_URL + NETWORK, checkPageHtmlLoaded)
+     // cluster.queue(TELEMETRY_URL + NETWORK, checkPageHtmlLoaded)
       cluster.queue(TELEMETRY_URL + NETWORK, checkActiveNodesNumber)
       cluster.queue(TELEMETRY_URL + NETWORK, checkPassiveNodesNumber)
       cluster.queue(TELEMETRY_URL + NETWORK, checkSentryNodesNumber)
