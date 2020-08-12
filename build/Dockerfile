@@ -12,7 +12,7 @@ FROM node:10-buster-slim
 WORKDIR /usr/src/app  
 
 RUN	apt-get -y update; \
-	apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends \
     ca-certificates python make g++ git supervisor dnsutils
 RUN npm install -g serve
 RUN git clone https://github.com/paritytech/substrate-telemetry.git

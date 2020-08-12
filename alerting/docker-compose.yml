@@ -1,0 +1,9 @@
+version: '3.4'
+services:
+  archipel:
+    image: luguslabs/archipel-telemetry-bot:latest
+    environment:
+      - TELEMETRY_URL=
+      - TELEGRAM_CHAT_ID=
+      - TELEGRAM_TOKEN=
+    restart: always

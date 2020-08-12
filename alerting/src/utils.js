@@ -129,8 +129,7 @@ async function checkEnv () {
   const mandatoryEnvToCheck = [
     'TELEMETRY_URL',
     'TELEGRAM_TOKEN',
-    'TELEGRAM_CHAT_ID',
-    'STASH_ADDRESS'
+    'TELEGRAM_CHAT_ID'
   ]
   mandatoryEnvToCheck.map((env) => {
     if (env in process.env) {
