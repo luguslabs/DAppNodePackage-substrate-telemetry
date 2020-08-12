@@ -17,7 +17,7 @@ const SCRAP_EVERY =
 const SIGNAL_CONFIRMATIONS =
   'SIGNAL_CONFIRMATIONS' in process.env
     ? parseInt(process.env.SIGNAL_CONFIRMATIONS)
-    : 5
+    : 10
 const CONFIRMATION_RETRY_DELAY =
   'CONFIRMATION_RETRY_DELAY' in process.env
     ? parseInt(process.env.CONFIRMATION_RETRY_DELAY)
