@@ -11,9 +11,9 @@ async function countPatternOccurences (input, pattern) {
 async function loadPage (page, url) {
   await page.goto(url, {
     waitUntil: 'networkidle2',
-    timeout: 10000
+    timeout: 20000
   })
-  await page.waitFor(1000)
+  await page.waitFor(2000)
 }
 
 async function getPageHtml (page, url) {

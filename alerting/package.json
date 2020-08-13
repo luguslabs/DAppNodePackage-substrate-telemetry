@@ -1,12 +1,12 @@
 {
   "name": "archipel-telemetry-bot",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
     "node-telegram-bot-api": "^0.40.0",
-    "puppeteer": "^3.0.0",
-    "puppeteer-cluster": "^0.20.0",
+    "puppeteer": "^5.2.1",
+    "puppeteer-cluster": "^0.22.0",
     "set-interval-async": "^1.0.32"
   },
   "devDependencies": {

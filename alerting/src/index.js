@@ -17,7 +17,7 @@ const SCRAP_EVERY =
 const SIGNAL_CONFIRMATIONS =
   'SIGNAL_CONFIRMATIONS' in process.env
     ? parseInt(process.env.SIGNAL_CONFIRMATIONS)
-    : 10
+    : 5
 const CONFIRMATION_RETRY_DELAY =
   'CONFIRMATION_RETRY_DELAY' in process.env
     ? parseInt(process.env.CONFIRMATION_RETRY_DELAY)
@@ -88,61 +88,6 @@ const BOT_CRASH_MSG = 'Supervision has crashed ...'
  * ---------------------
  */
 
-/**
- * checkPageHtmlLoaded
- */
-
-const ALERT_NO_ACCESS = 'URL inaccessible !!. Telemetry down ?: '
-const checkPageHtmlLoaded = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkPageHtmlLoaded')
-  try {
-    const htmlBodyTag = await confirmPatternOccurences(
-      page,
-      url,
-      'body',
-      0,
-      'greater',
-      1,
-      CONFIRMATION_RETRY_DELAY
-    )
-    if (!htmlBodyTag) {
-      const noHtmlBodyTagConfirmed = await confirmPatternOccurences(
-        page,
-        url,
-        'body',
-        0,
-        'equal',
-        SIGNAL_CONFIRMATIONS,
-        CONFIRMATION_RETRY_DELAY
-      )
-      if (noHtmlBodyTagConfirmed) {
-        console.error(ALERT_NO_ACCESS)
-        await bot.sendMessage(
-          TELEGRAM_CHAT_ID,
-          BOT_PREFIX_MSG + ALERT_NO_ACCESS + url
-        )
-        return
-      }
-    }
-  } catch (e) {
-    console.error(e)
-    console.log(
-      'Error. Retry in ' + CONFIRMATION_RETRY_DELAY + ' ms to access URL:' + url
-    )
-    await sleep(CONFIRMATION_RETRY_DELAY)
-    try {
-      await page.goto(url)
-    } catch (e) {
-      console.error(e)
-      console.error(ALERT_NO_ACCESS)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_NO_ACCESS + url
-      )
-    }
-  }
-}
 
 /**
  * checkActiveNodesNumber
@@ -150,34 +95,40 @@ const checkPageHtmlLoaded = async ({ page, data: url }) => {
 
 const ALERT_ACTIVE_NODES_NUMBER = 'Active nodes alert ! Expected ' + ACTIVE_NODES_NUMBER
 const checkActiveNodesNumber = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkActiveNodesNumber')
-  const checkActiveNodesNumber = await confirmPatternOccurences(
-    page,
-    url,
-    'active',
-    ACTIVE_NODES_NUMBER * 2,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (!checkActiveNodesNumber) {
-    const checkActiveNodesNumberConfirm= await confirmPatternOccurences(
+  try {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('checkActiveNodesNumber')
+    const checkActiveNodesNumber = await confirmPatternOccurences(
       page,
       url,
       'active',
       ACTIVE_NODES_NUMBER * 2,
-      'notEqual',
-      SIGNAL_CONFIRMATIONS,
+      'equal',
+      1,
       CONFIRMATION_RETRY_DELAY
     )
-    if (checkActiveNodesNumberConfirm) {
-      console.error(ALERT_ACTIVE_NODES_NUMBER)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_ACTIVE_NODES_NUMBER
+    if (!checkActiveNodesNumber) {
+      const checkActiveNodesNumberConfirm= await confirmPatternOccurences(
+        page,
+        url,
+        'active',
+        ACTIVE_NODES_NUMBER * 2,
+        'notEqual',
+        SIGNAL_CONFIRMATIONS,
+        CONFIRMATION_RETRY_DELAY
       )
+      if (checkActiveNodesNumberConfirm) {
+        console.error(ALERT_ACTIVE_NODES_NUMBER)
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + ALERT_ACTIVE_NODES_NUMBER
+        )
+      }
     }
+  }
+  catch(e){
+    console.log('checkActiveNodesNumber error')
+    console.error(e)
   }
 }
 
@@ -189,32 +140,38 @@ const ALERT_PASSIVE_NODES_NUMBER = 'Passive nodes alert ! Expected ' + PASSIVE_N
 const checkPassiveNodesNumber = async ({ page, data: url }) => {
   const bot = new TelegramBot(TELEGRAM_TOKEN)
   console.log('checkPassiveNodesNumber')
-  const checkPassiveNodesNumber = await confirmPatternOccurences(
-    page,
-    url,
-    'passive',
-    PASSIVE_NODES_NUMBER * 2,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (!checkPassiveNodesNumber) {
-    const checkPassiveNodesNumberConfirm= await confirmPatternOccurences(
+  try {
+    const checkPassiveNodesNumber = await confirmPatternOccurences(
       page,
       url,
       'passive',
       PASSIVE_NODES_NUMBER * 2,
-      'notEqual',
-      SIGNAL_CONFIRMATIONS,
+      'equal',
+      1,
       CONFIRMATION_RETRY_DELAY
     )
-    if (checkPassiveNodesNumberConfirm) {
-      console.error(ALERT_PASSIVE_NODES_NUMBER)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_PASSIVE_NODES_NUMBER
+    if (!checkPassiveNodesNumber) {
+      const checkPassiveNodesNumberConfirm= await confirmPatternOccurences(
+        page,
+        url,
+        'passive',
+        PASSIVE_NODES_NUMBER * 2,
+        'notEqual',
+        SIGNAL_CONFIRMATIONS,
+        CONFIRMATION_RETRY_DELAY
       )
+      if (checkPassiveNodesNumberConfirm) {
+        console.error(ALERT_PASSIVE_NODES_NUMBER)
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + ALERT_PASSIVE_NODES_NUMBER
+        )
+      }
     }
+  }
+  catch(e){
+    console.log('checkPassiveNodesNumber error')
+    console.error(e)
   }
 }
 
@@ -225,34 +182,40 @@ const checkPassiveNodesNumber = async ({ page, data: url }) => {
 
 const ALERT_SENTRY_NODES_NUMBER = 'Sentry nodes alert ! Expected ' + SENTRY_NODES_NUMBER
 const checkSentryNodesNumber = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkSentryNodesNumber')
-  const checkSentryNodesNumber = await confirmPatternOccurences(
-    page,
-    url,
-    'public',
-    SENTRY_NODES_NUMBER * 2,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (!checkSentryNodesNumber) {
-    const checkSentryNodesNumberConfirm= await confirmPatternOccurences(
+  try {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('checkSentryNodesNumber')
+    const checkSentryNodesNumber = await confirmPatternOccurences(
       page,
       url,
       'public',
       SENTRY_NODES_NUMBER * 2,
-      'notEqual',
-      SIGNAL_CONFIRMATIONS,
+      'equal',
+      1,
       CONFIRMATION_RETRY_DELAY
     )
-    if (checkSentryNodesNumberConfirm) {
-      console.error(ALERT_SENTRY_NODES_NUMBER)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_SENTRY_NODES_NUMBER
+    if (!checkSentryNodesNumber) {
+      const checkSentryNodesNumberConfirm= await confirmPatternOccurences(
+        page,
+        url,
+        'public',
+        SENTRY_NODES_NUMBER * 2,
+        'notEqual',
+        SIGNAL_CONFIRMATIONS,
+        CONFIRMATION_RETRY_DELAY
       )
+      if (checkSentryNodesNumberConfirm) {
+        console.error(ALERT_SENTRY_NODES_NUMBER)
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + ALERT_SENTRY_NODES_NUMBER
+        )
+      }
     }
+  }
+  catch(e){
+    console.log('checkSentryNodesNumber error')
+    console.error(e)
   }
 }
 
@@ -262,34 +225,40 @@ const checkSentryNodesNumber = async ({ page, data: url }) => {
 
 const ALERT_ARCHIPEL_NODES_NUMBER = 'Archipel nodes alert ! Expected ' + ARCHIPEL_NODES_NUMBER
 const checkArchipelNodesNumber = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkArchipelNodesNumber')
-  const checkArchipelNodesNumber = await confirmPatternOccurences(
-    page,
-    url,
-    'archipel',
-    ARCHIPEL_NODES_NUMBER * 2,
-    'equal',
-    1,
-    CONFIRMATION_RETRY_DELAY
-  )
-  if (!checkArchipelNodesNumber) {
-    const checkArchipelNodesNumberConfirm= await confirmPatternOccurences(
+  try {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('checkArchipelNodesNumber')
+    const checkArchipelNodesNumber = await confirmPatternOccurences(
       page,
       url,
       'archipel',
       ARCHIPEL_NODES_NUMBER * 2,
-      'notEqual',
-      SIGNAL_CONFIRMATIONS,
+      'equal',
+      1,
       CONFIRMATION_RETRY_DELAY
     )
-    if (checkArchipelNodesNumberConfirm) {
-      console.error(ALERT_ARCHIPEL_NODES_NUMBER)
-      await bot.sendMessage(
-        TELEGRAM_CHAT_ID,
-        BOT_PREFIX_MSG + ALERT_ARCHIPEL_NODES_NUMBER
+    if (!checkArchipelNodesNumber) {
+      const checkArchipelNodesNumberConfirm= await confirmPatternOccurences(
+        page,
+        url,
+        'archipel',
+        ARCHIPEL_NODES_NUMBER * 2,
+        'notEqual',
+        SIGNAL_CONFIRMATIONS,
+        CONFIRMATION_RETRY_DELAY
       )
+      if (checkArchipelNodesNumberConfirm) {
+        console.error(ALERT_ARCHIPEL_NODES_NUMBER)
+        await bot.sendMessage(
+          TELEGRAM_CHAT_ID,
+          BOT_PREFIX_MSG + ALERT_ARCHIPEL_NODES_NUMBER
+        )
+      }
     }
+  }
+  catch(e){
+    console.log('checkArchipelNodesNumber error')
+    console.error(e)
   }
 }
 
@@ -303,28 +272,34 @@ const ALERT_LAST_BLOCK_AGO =
   LAST_BLOCK_AGO_LIMIT_FOR_ALERT +
   ']  REACH. Current LAST BLOCK AGO = '
 const checkBlockBelowOneMinuteAgo = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkBlockBelowOneMinuteAgo')
-  await loadPage(page, url)
-  const evaluateLastBlockAgoValue = await evaluateValue(
-    page,
-    'div.Chain-header > div',
-    'LAST BLOCK',
-    /\d+s ago/g
-  )
-  const evaluateLastBlockValue = evaluateLastBlockAgoValue.substr(
-    0,
-    evaluateLastBlockAgoValue.indexOf('s')
-  )
-  if (
-    evaluateLastBlockValue &&
-    parseInt(evaluateLastBlockValue) > LAST_BLOCK_AGO_LIMIT_FOR_ALERT
-  ) {
-    console.error(ALERT_LAST_BLOCK_AGO + evaluateLastBlockValue)
-    await bot.sendMessage(
-      TELEGRAM_CHAT_ID,
-      BOT_PREFIX_MSG + ALERT_LAST_BLOCK_AGO + evaluateLastBlockValue
+  try {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('checkBlockBelowOneMinuteAgo')
+    await loadPage(page, url)
+    const evaluateLastBlockAgoValue = await evaluateValue(
+      page,
+      'div.Chain-header > div',
+      'LAST BLOCK',
+      /\d+s ago/g
     )
+    const evaluateLastBlockValue = evaluateLastBlockAgoValue.substr(
+      0,
+      evaluateLastBlockAgoValue.indexOf('s')
+    )
+    if (
+      evaluateLastBlockValue &&
+      parseInt(evaluateLastBlockValue) > LAST_BLOCK_AGO_LIMIT_FOR_ALERT
+    ) {
+      console.error(ALERT_LAST_BLOCK_AGO + evaluateLastBlockValue)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_LAST_BLOCK_AGO + evaluateLastBlockValue
+      )
+    }
+  }
+  catch(e){
+    console.log('checkBlockBelowOneMinuteAgo error')
+    console.error(e)
   }
 }
 
@@ -334,42 +309,48 @@ const checkBlockBelowOneMinuteAgo = async ({ page, data: url }) => {
 
 const ALERT_BEST_BLOCK_NULL = 'Best Block equal 0 on telemetry. Is it normal ?'
 const checkBestBlockNotNull = async ({ page, data: url }) => {
-  const bot = new TelegramBot(TELEGRAM_TOKEN)
-  console.log('checkBestBlockNotNull')
-  await loadPage(page, url)
-  const evaluateBestBlockValue = await evaluateValue(
-    page,
-    'div.Chain-header > div',
-    'BEST BLOCK',
-    /\d+/g
-  )
-  let confirmNull = false
-  if (parseInt(evaluateBestBlockValue) == 0) {
-    var i
-    var confirmations = 0
-    for (i = 0; i < SIGNAL_CONFIRMATIONS; i++) {
-      await sleep(CONFIRMATION_RETRY_DELAY)
-      const bestBlockValue = await evaluateValue(
-        page,
-        'div.Chain-header > div',
-        'BEST BLOCK',
-        /\d+/g
-      )
-      if (parseInt(bestBlockValue) == 0) {
-        confirmations = confirmations + 1
+  try {
+    const bot = new TelegramBot(TELEGRAM_TOKEN)
+    console.log('checkBestBlockNotNull')
+    await loadPage(page, url)
+    const evaluateBestBlockValue = await evaluateValue(
+      page,
+      'div.Chain-header > div',
+      'BEST BLOCK',
+      /\d+/g
+    )
+    let confirmNull = false
+    if (parseInt(evaluateBestBlockValue) == 0) {
+      var i
+      var confirmations = 0
+      for (i = 0; i < SIGNAL_CONFIRMATIONS; i++) {
+        await sleep(CONFIRMATION_RETRY_DELAY)
+        const bestBlockValue = await evaluateValue(
+          page,
+          'div.Chain-header > div',
+          'BEST BLOCK',
+          /\d+/g
+        )
+        if (parseInt(bestBlockValue) == 0) {
+          confirmations = confirmations + 1
+        }
+      }
+      if (confirmations == SIGNAL_CONFIRMATIONS) {
+        confirmNull = true
       }
     }
-    if (confirmations == SIGNAL_CONFIRMATIONS) {
-      confirmNull = true
+
+    if (confirmNull) {
+      console.error(ALERT_BEST_BLOCK_NULL)
+      await bot.sendMessage(
+        TELEGRAM_CHAT_ID,
+        BOT_PREFIX_MSG + ALERT_BEST_BLOCK_NULL
+      )
     }
   }
-
-  if (confirmNull) {
-    console.error(ALERT_BEST_BLOCK_NULL)
-    await bot.sendMessage(
-      TELEGRAM_CHAT_ID,
-      BOT_PREFIX_MSG + ALERT_BEST_BLOCK_NULL
-    )
+  catch(e){
+    console.log('checkBestBlockNotNull error')
+    console.error(e)
   }
 }
 
@@ -408,14 +389,13 @@ async function main () {
     try {
       const cluster = await Cluster.launch({
         concurrency: Cluster.CONCURRENCY_CONTEXT,
-        maxConcurrency: 2,
+        maxConcurrency: 1,
         puppeteerOptions: {
           headless: false,
           args: ['--no-sandbox']
         }
       })
 
-     // cluster.queue(TELEMETRY_URL + NETWORK, checkPageHtmlLoaded)
       cluster.queue(TELEMETRY_URL + NETWORK, checkActiveNodesNumber)
       cluster.queue(TELEMETRY_URL + NETWORK, checkPassiveNodesNumber)
       cluster.queue(TELEMETRY_URL + NETWORK, checkSentryNodesNumber)
